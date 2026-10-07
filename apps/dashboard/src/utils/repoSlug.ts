@@ -7,9 +7,11 @@ const LOCAL_PREFIX = "local:";
 const UPLOAD_PREFIX = "upload:";
 const REPO_V2_PREFIX = "repo:v2:";
 const PROJECT_PREFIX = "project:";
+const GIT_URL_PREFIX = "git-url:";
 
 type DecodedSlug =
   | { kind: "repo"; owner: string; repo: string; branch?: string; projectId?: string }
+  | { kind: "git-url"; gitUrl: string }
   | { kind: "local"; path: string }
   | { kind: "upload"; sessionId: string }
   | { kind: "project"; projectId: string };
@@ -54,6 +56,10 @@ export function encodeProjectSlug(projectId: string): string {
   return encodeBase64Url(PROJECT_PREFIX + projectId);
 }
 
+export function encodeGitUrlSlug(gitUrl: string): string {
+  return encodeBase64Url(GIT_URL_PREFIX + gitUrl);
+}
+
 /**
  * Decodes a slug back to either a repo, local path, or upload session
  */
@@ -82,6 +88,11 @@ export function decodeSlug(slug: string): DecodedSlug | null {
     if (decoded.startsWith(PROJECT_PREFIX)) {
       const projectId = decoded.slice(PROJECT_PREFIX.length);
       return projectId ? { kind: "project", projectId } : null;
+    }
+
+    if (decoded.startsWith(GIT_URL_PREFIX)) {
+      const gitUrl = decoded.slice(GIT_URL_PREFIX.length);
+      return gitUrl ? { kind: "git-url", gitUrl } : null;
     }
 
     if (decoded.startsWith(REPO_V2_PREFIX)) {

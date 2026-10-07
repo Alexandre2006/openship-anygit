@@ -192,9 +192,9 @@
     "methodDevice": "GitHub sign-in"
   },
   "urlImport": {
-    "invalidUrl": "Enter a valid GitHub repository URL",
+    "invalidUrl": "Enter a valid public HTTPS Git repository URL",
     "title": "Import from Git URL",
-    "description": "Paste a public repository URL to import. No GitHub connection required.",
+    "description": "Paste a public HTTPS Git URL to import from any Git host. Private repositories and SSH URLs are not supported yet.",
     "importButton": "Import Repository"
   }
 }

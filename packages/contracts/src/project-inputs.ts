@@ -361,6 +361,7 @@ export const CreateProjectBody = Type.Object({
   localPath: Type.Optional(Type.String({ maxLength: 1000 })),
   // Git source
   gitProvider: Type.Optional(Type.String({ default: "github" })),
+  gitUrl: Type.Optional(Type.String({ maxLength: 2000, description: "Stored HTTPS Git remote for a git-url source." })),
   gitOwner: Type.Optional(Type.String({ maxLength: 100 })),
   gitRepo: Type.Optional(Type.String({ maxLength: 100 })),
   gitBranch: Type.Optional(Type.String({ default: "main" })),

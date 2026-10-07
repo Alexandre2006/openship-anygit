@@ -257,6 +257,8 @@ export const projectsApi = {
     defaultRollbackStrategy?: "git" | "snapshot";
     slug?: string;
     gitOwner?: string;
+    /** Credential-free public HTTPS remote for the generic git-url source. */
+    gitUrl?: string;
     /** Source discriminator; "upload" for browser folder-upload projects. */
     gitProvider?: string;
     gitRepo?: string;

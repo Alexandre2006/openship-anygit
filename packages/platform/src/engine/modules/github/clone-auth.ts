@@ -170,6 +170,11 @@ export async function resolveBuildGitToken(opts: {
   /** Build-log sink for the probe's one-line outcome. Never receives secrets. */
   onLog?: (message: string) => void;
 }): Promise<BuildGitCredential> {
+  if (!opts.owner && !opts.repo && opts.repoUrl) {
+    const { validatePublicGitUrl } = await import("../deployments/git-url-source");
+    await validatePublicGitUrl(opts.repoUrl);
+    return { anonymous: true };
+  }
   const tokenCtx: TokenContext = {
     projectId: opts.projectId,
     owner: opts.owner ?? undefined,

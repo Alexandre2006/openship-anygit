@@ -837,7 +837,7 @@ async function reconcileComposeSource(
   const localPath = env.CLOUD_MODE ? undefined : project.localPath?.trim();
   const isLocalSource = Boolean(localPath);
   try {
-    if (!isLocalSource && (!project.gitOwner || !project.gitRepo)) return;
+    if (!isLocalSource && (!project.gitOwner || !project.gitRepo) && project.gitProvider !== "git-url") return;
     const composeRows = await listProjectComposeServices(project.id);
     const hasComposeRows = composeRows.some((s) => s.kind === "compose");
     // Image-only rows created by an older release carry no provenance, so we
@@ -879,6 +879,14 @@ async function reconcileComposeSource(
           composePath,
           rootDirectory: project.rootDirectory ?? undefined,
           env: options.interpolationEnv,
+        })
+      : project.gitProvider === "git-url"
+      ? await resolveProjectInfo({
+          source: "git-url",
+          gitUrl: project.gitUrl ?? "",
+          branch,
+          composePath,
+          env: options.interpolationEnv
         })
       : await resolveProjectInfo({
           source: "github",
@@ -934,13 +942,18 @@ async function resolveLifecycleSourceEnv(
 ): Promise<ProjectSourceEnv | undefined> {
   if (isReleaseProvider(project.gitProvider)) return undefined;
   const localPath = env.CLOUD_MODE ? undefined : project.localPath?.trim();
-  if (!localPath && (!project.gitOwner || !project.gitRepo)) return undefined;
+  if (!localPath && (!project.gitOwner || !project.gitRepo) && project.gitProvider !== "git-url") return undefined;
 
   try {
     return localPath
       ? await resolveProjectSourceEnv(
           { source: "local", path: localPath },
           project.rootDirectory ?? "",
+        )
+      : project.gitProvider === "git-url"
+      ? await resolveProjectSourceEnv(
+        { source: "git-url", gitUrl: project.gitUrl ?? "", branch },
+          project.rootDirectory ?? ""
         )
       : await resolveProjectSourceEnv(
           {

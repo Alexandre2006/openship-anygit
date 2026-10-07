@@ -136,7 +136,10 @@
     "local3": "Framework tespit ediliyor",
     "repo1": "GitHub'a bağlanılıyor",
     "repo2": "Depo getiriliyor",
-    "repo3": "Yapı analiz ediliyor"
+    "repo3": "Yapı analiz ediliyor",
+    "gitUrl1": "Git sunucusuna bağlanılıyor",
+    "gitUrl2": "Herkese açık depo klonlanıyor",
+    "gitUrl3": "Proje dosyaları analiz ediliyor"
   },
   "targetStep": {
     "heading": "Nereye dağıtmak istiyorsunuz?",

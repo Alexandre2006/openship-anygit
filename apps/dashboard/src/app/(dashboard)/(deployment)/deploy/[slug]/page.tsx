@@ -90,6 +90,7 @@ const DeployRepository: React.FC = () => {
                 d.kind === "local" ? d.path
                     : d.kind === "upload" ? t.deploy.page.uploadedFolder
                     : d.kind === "project" ? ""
+                    : d.kind === "git-url" ? d.gitUrl
                     : `${d.owner}/${d.repo}`;
             return { kind: "settings" as const, label };
         }
@@ -97,6 +98,7 @@ const DeployRepository: React.FC = () => {
         if (d.kind === "upload") return { kind: "local" as const, path: t.deploy.page.uploadedFolder };
         // Repo-less app: hydrated from saved rows, no git fetch — neutral summary.
         if (d.kind === "project") return { kind: "settings" as const, label: "" };
+        if (d.kind === "git-url") return { kind: "git-url" as const, url: d.gitUrl };
         return {
             kind: "repo" as const,
             owner: d.owner,
@@ -206,6 +208,14 @@ const DeployRepository: React.FC = () => {
                     stack: uploadStack,
                     name: uploadName,
                 });
+            } else if (decoded.kind === "git-url") {
+                try {
+                    const parsed = new URL(decoded.gitUrl);
+                    const name = parsed.pathname.split("/").filter(Boolean).at(-1)?.replace(/\.git$/i, "") || parsed.host;
+                    result = await initializeFromRepo(parsed.hostname, name, force, { gitUrl: decoded.gitUrl, branch });
+                } catch {
+                    result = { success: false, error: "Enter a valid public HTTPS Git URL", errorType: "api_error" };
+                }
             } else {
                 result = await initializeFromRepo(decoded.owner, decoded.repo, force, {
                     branch: branch ?? decoded.branch,

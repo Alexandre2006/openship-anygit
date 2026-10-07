@@ -11,7 +11,7 @@ import { useI18n } from "@/components/i18n-provider";
 import { useDeployment } from "@/context/DeploymentContext";
 import { usePlatform } from "@/context/PlatformContext";
 import { invalidateProjectCaches } from "@/hooks/useProjectEndpoints";
-import { encodeLocalSlug, encodeProjectSlug, encodeRepoSlug } from "@/utils/repoSlug";
+import { encodeGitUrlSlug, encodeLocalSlug, encodeProjectSlug, encodeRepoSlug } from "@/utils/repoSlug";
 import { getDeploymentSites, type DeploymentSite } from "./deployment-sites";
 
 function OpenDeploymentSite({ sites }: { sites: DeploymentSite[] }) {
@@ -195,7 +195,9 @@ export function DeploymentConfigurationAction({ className }: { className?: strin
   const projectId = state.projectId || config.projectId;
   if (!projectId) return null;
 
-  const slug = config.localPath
+  const slug = config.gitUrl
+    ? encodeGitUrlSlug(config.gitUrl)
+    : config.localPath
     ? encodeLocalSlug(config.localPath)
     : config.owner && config.repo
       ? encodeRepoSlug(config.owner, config.repo)

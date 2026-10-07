@@ -72,6 +72,13 @@ const COMPOSE_FILES = [
 
 export type Source =
   | {
+      source: "git-url";
+      gitUrl: string;
+      branch?: string;
+      composePath?: string;
+      env?: Record<string, string>;
+    }
+  | {
       source: "github";
       owner: string;
       repo: string;
@@ -855,6 +862,10 @@ async function readComposeText(
  * Both paths converge on detectStack and return the same ProjectInfo shape.
  */
 export async function resolveProjectInfo(input: Source): Promise<ProjectInfo> {
+  if (input.source === "git-url") {
+    const { resolveFromGitUrl } = await import("./git-url-source");
+    return resolveFromGitUrl(input.gitUrl, input.branch, { composePath: input.composePath, env: input.env });
+  }
   if (input.source === "github") {
     if (!input.ctx) {
       throw new Error("resolveProjectInfo(github): ctx is required");
@@ -888,6 +899,10 @@ export async function resolveProjectSourceEnv(
   input: Source,
   rootDirectory = "",
 ): Promise<ProjectSourceEnv> {
+  if (input.source === "git-url") {
+    const { resolveSourceEnvFromGitUrl } = await import("./git-url-source");
+    return resolveSourceEnvFromGitUrl(input.gitUrl, input.branch, rootDirectory);
+  }
   if (input.source === "github") {
     if (!input.ctx) {
       throw new Error("resolveProjectSourceEnv(github): ctx is required");

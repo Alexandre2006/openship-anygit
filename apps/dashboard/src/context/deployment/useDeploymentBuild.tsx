@@ -790,13 +790,14 @@ export function useDeploymentBuild(
         projectId: ensuredProjectId || undefined,
         serverId: config.deployTarget === "server" || config.deployTarget === "cloud" ? config.serverId : undefined,
         name: config.projectName || config.repo || config.localPath?.split("/").pop() || "project",
-        gitOwner: isSourceless ? undefined : config.owner || undefined,
-        gitRepo: isSourceless ? undefined : config.repo || undefined,
+        gitOwner: isSourceless || config.gitUrl ? undefined : config.owner || undefined,
+        gitRepo: isSourceless || config.gitUrl ? undefined : config.repo || undefined,
         gitBranch: isSourceless ? undefined : config.branch || undefined,
         localPath: config.localPath || undefined,
         // Folder-upload projects: mark the source so it renders correctly and
         // can later be switched to a GitHub repo (Source tab / linkRepo).
-        gitProvider: isUpload ? "upload" : undefined,
+        gitProvider: isUpload ? "upload" : config.gitUrl ? "git-url" : undefined,
+        gitUrl: config.gitUrl || undefined,
         framework: config.framework,
         packageManager: config.packageManager,
         buildImage: config.buildImage,

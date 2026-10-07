@@ -375,6 +375,8 @@ export interface DeploymentConfig {
   projectName: string;
   repo: string;
   owner: string;
+  /** Credential-free public HTTPS Git remote (generic Git URL source). */
+  gitUrl?: string;
   /** Absolute path for local projects (mutually exclusive with owner/repo git source) */
   localPath?: string;
   /**
@@ -502,6 +504,7 @@ export const DEFAULT_CONFIG: DeploymentConfig = {
   projectName: "",
   repo: "",
   owner: "",
+  gitUrl: undefined,
   localPath: undefined,
   composePath: undefined,
   uploadSessionId: undefined,
@@ -937,6 +940,7 @@ export interface DeploymentContextType {
     force?: string,
     context?: {
       branch?: string;
+      gitUrl?: string;
       projectId?: string;
       composePath?: string;
       env?: Record<string, string>;

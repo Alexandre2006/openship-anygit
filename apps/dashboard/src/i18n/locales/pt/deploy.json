@@ -136,7 +136,10 @@
     "local3": "Detectando framework",
     "repo1": "Conectando ao GitHub",
     "repo2": "Buscando repositório",
-    "repo3": "Analisando estrutura"
+    "repo3": "Analisando estrutura",
+    "gitUrl1": "Conectando ao host Git",
+    "gitUrl2": "Clonando repositório público",
+    "gitUrl3": "Analisando arquivos do projeto"
   },
   "targetStep": {
     "heading": "Onde você quer implantar?",

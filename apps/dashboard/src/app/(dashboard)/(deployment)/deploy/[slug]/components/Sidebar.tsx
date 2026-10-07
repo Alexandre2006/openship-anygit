@@ -178,7 +178,7 @@ const Sidebar: React.FC<{ destinationReady: boolean }> = ({ destinationReady }) 
   // installation token. Cloud / GitHub-App mode only — surfaces a clear
   // message otherwise (the backend 409s in gh-CLI / PAT mode).
   const handleCopyCloneToken = useCallback(async () => {
-    if (!config.owner || !config.repo || config.owner === "local") {
+    if (!config.owner || !config.repo || config.owner === "local" || config.gitUrl) {
       showToast(t.deploy.sidebar.cloneTokenNoRepo, "error", t.deploy.sidebar.cloneTokenTitle);
       return;
     }
@@ -415,11 +415,11 @@ const Sidebar: React.FC<{ destinationReady: boolean }> = ({ destinationReady }) 
         </div>
         <div className="p-4 pt-3">
           <div className="flex items-center gap-3">
-            <UiIcon name="github" className="size-4 text-muted-foreground shrink-0" />
+            <UiIcon name={config.gitUrl ? "link" : "github"} className="size-4 text-muted-foreground shrink-0" />
             <div className="flex-1 min-w-0">
               {config.owner && config.owner !== "local" && config.repo ? (
                 <a
-                  href={`https://github.com/${config.owner}/${config.repo}`}
+                  href={config.gitUrl || `https://github.com/${config.owner}/${config.repo}`}
                   target="_blank"
                   rel="noopener noreferrer"
                   title={`${config.owner}/${config.repo}`}
@@ -434,7 +434,7 @@ const Sidebar: React.FC<{ destinationReady: boolean }> = ({ destinationReady }) 
                 </p>
               )}
             </div>
-            {config.owner && config.owner !== "local" && config.repo && (
+            {config.owner && config.owner !== "local" && config.repo && !config.gitUrl && (
               <DropdownMenu
                 align="right"
                 triggerClassName="p-1.5 -me-1 rounded-lg text-muted-foreground hover:bg-muted transition-colors"

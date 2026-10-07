@@ -134,6 +134,7 @@ const GIT_SOURCE_IDENTITY_KEYS = new Set([
   "gitProvider",
   "gitOwner",
   "gitRepo",
+  "gitUrl",
   "installationId",
   "releaseSource",
 ]);
@@ -170,6 +171,7 @@ export { deploymentIsBlocked, deploymentRoutingUnsynced };
 // Same reason: the run→payload projection is an allowlist that must be readable and
 // testable without this file's graph. See the module doc for what it deliberately drops.
 import { readActiveMigration } from "./active-migration";
+import { assertPublicUrlLiteral } from "../../lib/ssrf-guard";
 
 /**
  * Is a live migration even POSSIBLE for a project on this instance?
@@ -552,17 +554,31 @@ function resolveProjectSource(data: TCreateProjectBody) {
   if (isRelease && env.CLOUD_MODE && releaseArtifactKind(releaseSource!) === "archive") {
     throw new ForbiddenError("Release/dist source projects are not available in cloud mode");
   }
+  const isGitUrl = data.gitProvider === "git-url";
   const safeLocalPath =
     !isRelease && data.localPath && !env.CLOUD_MODE ? data.localPath : undefined;
-  const gitOwner = isRelease || safeLocalPath ? undefined : data.gitOwner;
-  const gitRepo = isRelease || safeLocalPath ? undefined : data.gitRepo;
+  if (isGitUrl) {
+    if (!data.gitUrl) throw new ValidationError("A Git URL source requires gitUrl.");
+    try {
+      const parsed = new URL(data.gitUrl.trim());
+      assertPublicUrlLiteral(parsed.toString());
+      if (parsed.username || parsed.password || parsed.port || parsed.search || parsed.hash || parsed.pathname === "/") {
+        throw new Error("Use a public HTTPS Git URL without credentials, ports, or query parameters.");
+      }
+    } catch (err) {
+      throw new ValidationError(err instanceof Error ? err.message : "Invalid public Git URL.");
+    }
+    if (data.localPath || data.gitOwner || data.gitRepo) throw new ValidationError("A Git URL source cannot be combined with another source.");
+  }
+  const gitOwner = isRelease || safeLocalPath || isGitUrl ? undefined : data.gitOwner;
+  const gitRepo = isRelease || safeLocalPath || isGitUrl ? undefined : data.gitRepo;
 
   return {
     safeLocalPath,
     gitOwner,
     gitRepo,
     gitProvider: isRelease ? "release" : safeLocalPath ? "local" : (data.gitProvider ?? "github"),
-    gitUrl: projectGitUrl(gitOwner, gitRepo),
+    gitUrl: isGitUrl ? data.gitUrl!.trim() : projectGitUrl(gitOwner, gitRepo),
     releaseSource,
   };
 }

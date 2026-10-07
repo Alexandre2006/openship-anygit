@@ -136,7 +136,10 @@
     "local3": "正在检测框架",
     "repo1": "正在连接 GitHub",
     "repo2": "正在获取仓库",
-    "repo3": "正在分析结构"
+    "repo3": "正在分析结构",
+    "gitUrl1": "正在连接 Git 主机",
+    "gitUrl2": "正在克隆公开仓库",
+    "gitUrl3": "正在分析项目文件"
   },
   "targetStep": {
     "heading": "你想部署到哪里？",

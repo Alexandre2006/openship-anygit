@@ -26,13 +26,19 @@ async function preparationSource(ctx: ExecutionContext, body: PrepareDeploymentI
     }
     return { source, owner: body.owner, repo: body.repo, branch: body.branch, ctx, composePath, env: envVars };
   }
+  if (source === "git-url") {
+    if (!body.gitUrl) throw new ValidationError("gitUrl is required");
+    const { validatePublicGitUrl } = await import("./git-url-source");
+    const gitUrl = await validatePublicGitUrl(body.gitUrl);
+    return { source, gitUrl, branch: body.branch, composePath, env: envVars };
+  }
   if (source === "local") {
     if (env.CLOUD_MODE) throw new AppError("Local projects are not available in cloud mode", 403);
     if (!body.path) throw new ValidationError("path is required");
     const path = process.env.OPENSHIP_NATIVE === "true" ? await assertNativeSourcePath(body.path) : body.path;
     return { source, path, composePath, env: envVars };
   }
-  throw new ValidationError("source must be 'github' or 'local'");
+  throw new ValidationError("source must be 'github', 'git-url' or 'local'");
 }
 
 export const buildDependencies: BuildDependencies = {

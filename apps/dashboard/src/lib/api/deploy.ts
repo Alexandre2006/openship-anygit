@@ -69,6 +69,15 @@ export type PrepareProjectSource = { includeEnv?: boolean } & (
       env?: Record<string, string>;
     }
   | {
+      source: "git-url";
+      gitUrl: string;
+      includeEnv?: boolean;
+      branch?: string;
+      force?: string | boolean;
+      composePath?: string;
+      env?: Record<string, string>;
+    }
+  | {
       source: "local";
       path: string;
       composePath?: string;

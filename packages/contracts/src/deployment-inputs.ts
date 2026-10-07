@@ -184,13 +184,14 @@ export const BuildAccessBody = Type.Object({
 export const PrepareDeployBody = Type.Object({
   ...SourceScanOptionsSchema.properties,
   source: Type.Optional(
-    Type.Union([Type.Literal("github"), Type.Literal("local")], {
+    Type.Union([Type.Literal("github"), Type.Literal("git-url"), Type.Literal("local")], {
       description: "Source kind; inferred from owner/repo vs path when omitted.",
     }),
   ),
   owner: Type.Optional(Type.String({ description: "GitHub repo owner (github source)." })),
   repo: Type.Optional(Type.String({ description: "GitHub repo name (github source)." })),
   branch: Type.Optional(Type.String({ description: "Git branch (github source)." })),
+  gitUrl: Type.Optional(Type.String({ maxLength: 2000, description: "Public HTTPS Git remote (git-url source)." })),
   path: Type.Optional(
     Type.String({ description: "Local filesystem path (local source; self-hosted only)." }),
   ),

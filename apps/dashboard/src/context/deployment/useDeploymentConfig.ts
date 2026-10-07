@@ -63,6 +63,7 @@ interface PreparedConfigArgs {
   projectId?: string;
   localPath?: string;
   uploadSessionId?: string;
+  gitUrl?: string;
 }
 
 interface LoadedProjectState {
@@ -806,6 +807,7 @@ export function useDeploymentConfig() {
         projectId,
         localPath,
         uploadSessionId,
+        gitUrl,
       } = args;
       const preparedContext = resolvePreparedProjectContext(response, newEndpointDomainType);
       const routingState = resolvePreparedRoutingState(
@@ -835,6 +837,7 @@ export function useDeploymentConfig() {
           owner,
           localPath,
           uploadSessionId,
+          gitUrl,
           projectName: project?.name || repoName,
           // The scan echoes back the compose path it actually used (request value or
           // the one openship.json declared), so the field shows what's in effect and
@@ -947,6 +950,7 @@ export function useDeploymentConfig() {
       force?: string,
       context?: {
         branch?: string;
+        gitUrl?: string;
         projectId?: string;
         composePath?: string;
         env?: Record<string, string>;
@@ -976,19 +980,29 @@ export function useDeploymentConfig() {
           }
         }
 
-        const sourceOwner = project?.gitOwner || owner;
+        const storedGitUrl = project?.gitProvider === "git-url" ? project?.gitUrl : undefined;
+        const sourceGitUrl = context?.gitUrl || storedGitUrl;
+        const sourceOwner = sourceGitUrl ? new URL(sourceGitUrl).hostname : (project?.gitOwner || owner);
         const sourceRepo = project?.gitRepo || repo;
         const projectBranch = typeof project?.gitBranch === "string" ? project.gitBranch : "";
         const requestedBranch = context?.branch?.trim() || projectBranch.trim() || undefined;
         const changesSavedBranch = !!project && requestedBranch !== projectBranch;
 
-        const preparedSource: PrepareProjectSource = {
-          owner: sourceOwner,
-          repo: sourceRepo,
-          branch: requestedBranch,
-          force,
-          ...scanComposePath(context?.composePath, changesSavedBranch ? null : project),
-          ...(context?.env ? { env: { ...context.env } } : {}),
+        const preparedSource: PrepareProjectSource = sourceGitUrl
+          ? {
+            source: "git-url",
+            gitUrl: sourceGitUrl,
+            branch: requestedBranch,
+            ...scanComposePath(context?.composePath, changesSavedBranch ? null : project),
+            ...(context?.env ? { env: { ...context.env } } : {})
+            }
+          : {
+            owner: sourceOwner,
+            repo: sourceRepo,
+            branch: requestedBranch,
+            force,
+            ...scanComposePath(context?.composePath, changesSavedBranch ? null : project),
+            ...(context?.env ? { env: { ...context.env } } : {})
         };
         const response = await deployApi.prepare({ ...preparedSource, includeEnv: true });
 
@@ -1033,7 +1047,8 @@ export function useDeploymentConfig() {
                   }
                 : project,
               repoName,
-              owner: response.repository.owner?.login || sourceOwner,
+              owner: sourceGitUrl ? sourceOwner : (response.repository.owner?.login || sourceOwner),
+              gitUrl: sourceGitUrl,
               branch: selectedBranch,
               branches: branchOptions,
               branchPage: 1,
@@ -1065,8 +1080,7 @@ export function useDeploymentConfig() {
       if (rescanInProgress.current) return { success: false };
       if (!requestedBranch || requestedBranch === config.branch) return { success: true };
       if (
-        !config.owner ||
-        !config.repo ||
+        ((!config.owner || !config.repo) && !config.gitUrl) ||
         config.localPath ||
         config.uploadSessionId ||
         config.isApp
@@ -1078,8 +1092,9 @@ export function useDeploymentConfig() {
       setIsRescanning(true);
       try {
         const response = await deployApi.prepare({
-          owner: config.owner,
-          repo: config.repo,
+          ...(config.gitUrl
+            ? { source: "git-url" as const, gitUrl: config.gitUrl }
+            : { owner: config.owner, repo: config.repo }),
           branch: requestedBranch,
           ...scanEnv(config.envVars),
           includeEnv: true,
@@ -1092,6 +1107,7 @@ export function useDeploymentConfig() {
             prev.projectId !== config.projectId ||
             prev.owner !== config.owner ||
             prev.repo !== config.repo ||
+            prev.gitUrl !== config.gitUrl ||
             prev.branch !== config.branch
           )
             return prev;
@@ -1101,6 +1117,7 @@ export function useDeploymentConfig() {
             project: null,
             repoName: config.repo,
             owner: config.owner,
+            gitUrl: config.gitUrl,
             branch: requestedBranch,
             branches: Array.from(
               new Set([
@@ -1507,13 +1524,14 @@ export function useDeploymentConfig() {
               repoName,
               // Non-empty owner keeps the page's `!config.owner` guard satisfied;
               // local-sourced projects use the "local" sentinel (matches initializeFromLocal).
-              owner: project.gitOwner || (project.localPath ? "local" : repoName),
+              owner: project.gitProvider === "git-url" && project.gitUrl ? new URL(project.gitUrl).hostname : (project.gitOwner || (project.localPath ? "local" : repoName)),
               branch,
               branches: branch ? [branch] : [],
               branchPage: 0,
               branchesHasMore: Boolean(project.gitOwner && project.gitRepo),
               projectId,
               localPath: project.localPath || undefined,
+              gitUrl: project.gitProvider === "git-url" ? project.gitUrl : undefined,
             }),
             // buildPreparedConfig (shared with detection) doesn't load production
             // env — overlay the saved values we fetched above.

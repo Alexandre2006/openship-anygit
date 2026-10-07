@@ -22,6 +22,7 @@ export const ProjectSchema = Type.Object({
   gitProvider: Type.Optional(nullableString()),
   gitOwner: Type.Optional(nullableString()),
   gitRepo: Type.Optional(nullableString()),
+  gitUrl: Type.Optional(nullableString()),
   gitBranch: Type.Optional(nullableString()),
   framework: Type.Optional(nullableString()),
   packageManager: Type.Optional(nullableString()),

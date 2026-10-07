@@ -4,7 +4,7 @@ import { Icon as UiIcon } from "@repo/ui/icons";
 
 import React, { useId, useState } from "react";
 import { useRouter } from "next/navigation";
-import { encodeRepoSlug } from "@/utils/repoSlug";
+import { encodeGitUrlSlug } from "@/utils/repoSlug";
 import { useI18n } from "@/components/i18n-provider";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
@@ -22,17 +22,10 @@ export function UrlImport({ header }: { header?: React.ReactNode }) {
 
     try {
       const parsed = new URL(url.trim());
-      const parts = parsed.pathname.replace(/\/+$/, "").slice(1).split("/");
-      const [owner, rawRepo] = parts;
-      const repo = rawRepo?.replace(/\.git$/, "");
-      if (
-        !["https:", "http:"].includes(parsed.protocol) ||
-        !["github.com", "www.github.com"].includes(parsed.hostname) ||
-        parsed.username || parsed.password || parsed.port ||
-        parts.length !== 2 || !owner || !repo ||
-        !/^[a-zA-Z0-9-]+$/.test(owner) || !/^[a-zA-Z0-9_.-]+$/.test(repo)
-      ) throw new Error("Invalid repository URL");
-      router.push(`/deploy/${encodeRepoSlug(owner, repo)}`);
+      if (parsed.protocol !== "https:" || parsed.username || parsed.password || parsed.port || parsed.search || parsed.hash || parsed.pathname === "/") {
+        throw new Error("Invalid repository URL");
+      }
+      router.push(`/deploy/${encodeGitUrlSlug(parsed.toString())}`);
     } catch {
       setError(t.library.urlImport.invalidUrl);
     }
@@ -64,7 +57,7 @@ export function UrlImport({ header }: { header?: React.ReactNode }) {
                 aria-describedby={error ? errorId : undefined}
                 value={url}
                 onChange={(e) => { setUrl(e.target.value); setError(""); }}
-                placeholder="https://github.com/username/repository"
+                placeholder="https://git.example.com/username/repository.git"
                 className={error ? "ring-2 ring-danger-border" : undefined}
               />
               {error && (

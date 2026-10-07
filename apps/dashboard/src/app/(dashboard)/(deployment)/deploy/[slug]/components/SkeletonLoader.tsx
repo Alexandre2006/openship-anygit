@@ -8,6 +8,7 @@ import { useI18n } from "@/components/i18n-provider";
 
 type LoadingSource =
   | { kind: "repo"; owner: string; repo: string; branch?: string }
+  | { kind: "git-url"; url: string }
   | { kind: "local"; path: string }
   | { kind: "settings"; label?: string }
   | null;
@@ -22,6 +23,7 @@ const Shimmer = ({ className }: { className?: string }) => (
 
 function sourceLabel(source: LoadingSource): string | null {
   if (!source) return null;
+  if (source.kind === "git-url") return source.url;
   if (source.kind === "local") return source.path;
   if (source.kind === "settings") return source.label ?? null;
   return source.branch ? `${source.owner}/${source.repo} · ${source.branch}` : `${source.owner}/${source.repo}`;
@@ -38,7 +40,9 @@ const StatusHeader = ({ source }: { source: LoadingSource }) => {
       ? [s.settings1, s.settings2]
       : source?.kind === "local"
         ? [s.local1, s.local2, s.local3]
-        : [s.repo1, s.repo2, s.repo3];
+        : source?.kind === "git-url"
+          ? [s.gitUrl1, s.gitUrl2, s.gitUrl3]
+          : [s.repo1, s.repo2, s.repo3];
   const [phase, setPhase] = useState(0);
 
   useEffect(() => {

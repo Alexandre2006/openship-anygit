@@ -136,7 +136,10 @@
     "local3": "Framework wird erkannt",
     "repo1": "Verbindung zu GitHub wird hergestellt",
     "repo2": "Repository wird abgerufen",
-    "repo3": "Struktur wird analysiert"
+    "repo3": "Struktur wird analysiert",
+    "gitUrl1": "Verbindung zum Git-Host wird hergestellt",
+    "gitUrl2": "Öffentliches Repository wird geklont",
+    "gitUrl3": "Projektdateien werden analysiert"
   },
   "targetStep": {
     "heading": "Wohin möchten Sie deployen?",

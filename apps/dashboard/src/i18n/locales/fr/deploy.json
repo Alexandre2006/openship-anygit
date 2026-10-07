@@ -136,7 +136,10 @@
     "local3": "Détection du framework",
     "repo1": "Connexion à GitHub",
     "repo2": "Récupération du dépôt",
-    "repo3": "Analyse de la structure"
+    "repo3": "Analyse de la structure",
+    "gitUrl1": "Connexion à l’hôte Git",
+    "gitUrl2": "Clonage du dépôt public",
+    "gitUrl3": "Analyse des fichiers du projet"
   },
   "targetStep": {
     "heading": "Où voulez-vous déployer ?",
